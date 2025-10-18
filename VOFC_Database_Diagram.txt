@@ -1,0 +1,101 @@
+VOFC LIBRARY DATABASE SCHEMA DIAGRAM
+=====================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           SUPABASE POSTGRESQL                              │
+│                    db.wivohgbuuwxoyfyzntsd.supabase.co                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            VULNERABILITIES                                 │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ id (UUID, PK)                                                      │   │
+│  │ vulnerability (TEXT) - Description of security issue              │   │
+│  │ discipline (TEXT) - Category (Security Management, etc.)          │   │
+│  │ source (TEXT)                                                      │   │
+│  │ created_at (TIMESTAMP)                                            │   │
+│  │ updated_at (TIMESTAMP)                                            │   │
+│  │ sector_id (TEXT)                                                   │   │
+│  │ subsector_id (TEXT)                                                │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│  Records: 108 vulnerabilities                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ 1:M
+                                    │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        VULNERABILITY_OFC_LINKS                            │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ vulnerability_id (UUID, FK) → vulnerabilities.id                   │   │
+│  │ ofc_id (UUID, FK) → options_for_consideration.id                  │   │
+│  │ link_type (TEXT) - "direct"                                       │   │
+│  │ confidence_score (DECIMAL) - 1.0                                  │   │
+│  │ created_at (TIMESTAMP)                                            │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│  Records: 315 linking relationships                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ M:1
+                                    │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    OPTIONS_FOR_CONSIDERATION                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ id (UUID, PK)                                                      │   │
+│  │ option_text (TEXT) - Detailed mitigation recommendation            │   │
+│  │ discipline (TEXT) - Category (matches vulnerability disciplines)   │   │
+│  │ source (TEXT)                                                      │   │
+│  │ created_at (TIMESTAMP)                                            │   │
+│  │ updated_at (TIMESTAMP)                                            │   │
+│  │ sector_id (TEXT)                                                   │   │
+│  │ subsector_id (TEXT)                                                │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│  Records: 289 options for consideration                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DISCIPLINE CATEGORIES:
+=====================
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ • Facility Information                                                     │
+│ • First Preventers-Responders                                              │
+│ • Information Sharing                                                       │
+│ • Security Management                                                       │
+│ • Resilience Management - Business Continuity                              │
+│ • Resilience Management - Emergency Action Plan                            │
+│ • Security Force                                                           │
+│ • Perimeter Security                                                        │
+│ • Entry Controls                                                            │
+│ • Barriers                                                                  │
+│ • Building Envelope                                                         │
+│ • Electronic Security Systems - IDS                                         │
+│ • Electronic Security Systems - CCTV                                        │
+│ • Illumination                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DATA FLOW:
+==========
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   CSV       │    │   CSV       │    │   CSV       │
+│Vulnerabilities│  │   Options   │    │   Links     │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+       ▼                  ▼                  ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│Vulnerabilities│  │   Options   │    │    Links    │
+│   Table      │  │   Table     │    │   Table     │
+└──────┬──────┘    └──────┬──────┘    └──────┬──────┘
+       │                  │                  │
+       └──────────────────┼──────────────────┘
+                          │
+                          ▼
+                 ┌─────────────┐
+                 │   Many-to-  │
+                 │   Many      │
+                 │ Relationship│
+                 └─────────────┘
+
+INTEGRITY CHECKS:
+=================
+• All foreign key relationships must be valid
+• No orphaned links in vulnerability_ofc_links
+• Confidence scores are 1.0 (100% confidence)
+• All links are "direct" type relationships
